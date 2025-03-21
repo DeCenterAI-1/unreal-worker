@@ -65,6 +65,7 @@ async function processQueue() {
 
         if (profileData.credit_balance <= 0 && profileData.wallet?.privateKey) {
           headers.Authorization = `Bearer ${profileData.wallet.privateKey}`;
+          console.log("🔑 Authorization header set");
         }
 
         // Send request to API
