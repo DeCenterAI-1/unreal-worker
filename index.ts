@@ -68,6 +68,9 @@ async function processQueue() {
           console.log("🔑 Authorization header set");
         }
 
+        job.module = "nearai" //TODO: remove
+        job.version = "v0.1.2"
+
         // Send request to API
         const response = await fetch(`${process.env.API_URL}/darts`, {
           method: "POST",
