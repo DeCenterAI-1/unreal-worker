@@ -12,6 +12,8 @@ const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 interface QueueJob {
   msg_id: number;
   message: {
+    module: string;
+    version: string;
     author: string;
   };
 }
@@ -39,6 +41,12 @@ async function processQueue() {
     }
 
     for (const job of data as QueueJob[]) {
+
+
+      job.message.module = "nearai" //TODO: remove
+      job.message.version = "v0.1.3"
+
+
       console.log("🛠️ Processing job:", job.message);
 
       try {
@@ -67,9 +75,6 @@ async function processQueue() {
           headers.Authorization = `Bearer ${profileData.wallet.privateKey}`;
           console.log("🔑 Authorization header set");
         }
-
-        job.module = "nearai" //TODO: remove
-        job.version = "v0.1.2"
 
         // Send request to API
         const response = await fetch(`${process.env.API_URL}/darts`, {
