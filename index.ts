@@ -48,7 +48,7 @@ async function processQueue() {
 
       
       job.message.module = "nearai" //TODO: remove
-      job.message.version = "v0.1.4"
+      job.message.version = "v0.1.3"
       job.message.inputs.cpu = 0
       job.message.inputs.ram = 0
       // job.message = {
