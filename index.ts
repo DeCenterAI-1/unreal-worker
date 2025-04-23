@@ -15,6 +15,10 @@ interface QueueJob {
     module: string;
     version: string;
     author: string;
+    inputs: {
+    cpu: number | null;
+    ram: number | null;
+    }
   };
 }
 
@@ -42,9 +46,16 @@ async function processQueue() {
 
     for (const job of data as QueueJob[]) {
 
-
+      
       job.message.module = "nearai" //TODO: remove
       job.message.version = "v0.1.3"
+      job.message.inputs.cpu = 0
+      job.message.inputs.ram = 0
+      // job.message = {
+      //   ...job.message,
+      //   cpu: null,
+      //   ram: null,
+      // }
 
 
       console.log("🛠️ Processing job:", job.message);
