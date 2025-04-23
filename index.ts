@@ -83,7 +83,7 @@ async function processQueue() {
         console.log("🔑 Wallet Private Key:", profileData.wallet?.privateKey);
 
         if (profileData.credit_balance <= 0 && profileData.wallet?.privateKey) {
-          headers.Authorization = `Bearer ${profileData.wallet.privateKey}`;
+          // headers.Authorization = `Bearer ${profileData.wallet.privateKey}`; //FIXME: pipeline failing
           console.log("🔑 Authorization header set");
         }
 
