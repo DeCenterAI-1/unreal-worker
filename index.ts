@@ -47,13 +47,13 @@ async function processQueue() {
     for (const job of data as QueueJob[]) {
 
       if (job.message.module !== "nearai") {
-        job.message.module = "nearai" //TODO: remove
-        job.message.version = "v0.3.0"
-        delete job.message?.inputs?.cpu;
-        delete job.message?.inputs?.ram;
-        delete job.message?.inputs?.gpu;
       }
-
+      
+      job.message.module = "nearai" //TODO: remove
+      job.message.version = "v0.3.0"
+      delete job.message?.inputs?.cpu;
+      delete job.message?.inputs?.ram;
+      delete job.message?.inputs?.gpu;
       
       // job.message = {
       //   ...job.message,
