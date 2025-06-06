@@ -16,9 +16,9 @@ interface QueueJob {
     version: string;
     author: string;
     inputs: {
-    cpu: number | null;
-    ram: number | null;
-    }
+      cpu: number | null;
+      ram: number | null;
+    };
   };
 }
 
@@ -28,8 +28,8 @@ async function processQueue() {
 
     const { data, error } = await supabase.rpc("read_from_queue", {
       queue_name: queueName,
-      vt: 30, // Visibility timeout (seconds)
-      qty: 1, // Number of messages to fetch
+      vt: 30,
+      qty: 1,
     });
 
     if (error) {
@@ -45,23 +45,6 @@ async function processQueue() {
     }
 
     for (const job of data as QueueJob[]) {
-
-      // if (job.message.module !== "nearai") {
-      //   job.message.module = "nearai" //TODO: remove
-      //   job.message.version = "v0.3.0"
-      //   delete job.message?.inputs?.cpu;
-      //   delete job.message?.inputs?.ram;
-      //   delete job.message?.inputs?.gpu;
-      // }
-      
-      
-      // job.message = {
-      //   ...job.message,
-      //   cpu: null,
-      //   ram: null,
-      // }
-
-
       console.log("🛠️ Processing job:", job.message);
 
       try {
@@ -81,7 +64,7 @@ async function processQueue() {
             `❌ Failed to fetch profile data for author ${job.message.author}:`,
             profileError,
           );
-          continue; // Skip processing if profile data is unavailable
+          continue;
         }
 
         console.log("🔑 Wallet Private Key:", profileData.wallet?.privateKey);
@@ -105,7 +88,7 @@ async function processQueue() {
             response.status,
             responseText,
           );
-          continue; // Don't delete the job, allow retry
+          continue;
         }
 
         console.log(
