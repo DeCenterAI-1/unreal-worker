@@ -2,6 +2,8 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { transferUnrealTokens } from "./tokenTransfer";
 
+import {type QueueJob} from "./index.d"
+
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL as string;
@@ -14,22 +16,6 @@ const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 // Track jobs that have already had tokens transferred to prevent duplicate transfers
 const processedTokenTransfers = new Set<string>();
 
-interface QueueJob {
-  msg_id: number;
-  message: {
-    module: string;
-    version: string;
-    author: string;
-    inputs: {
-      cpu: number | null;
-      ram: number | null;
-    };
-    tokenTransactions?: {
-      funderToWalletTxHash: string;
-      walletToClientTxHash: string;
-    };
-  };
-}
 
 async function processQueue() {
   while (true) {

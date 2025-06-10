@@ -11,7 +11,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { erc20Abi } from "./abis/erc20Abi";
 
 
-import {torusMainnet, TORUS_RPC, UNREAL_COST, UNREAL_DRIP, , UNREAL_CLIENT_ADDRESS, UNREAL_TOKEN_ADDRESS, ETH_DRIP, publicClient} from "./config"
+import {torusMainnet, TORUS_RPC, UNREAL_COST, UNREAL_DRIP, UNREAL_CLIENT_ADDRESS, UNREAL_TOKEN_ADDRESS, ETH_DRIP, publicClient} from "./config"
 /**
  * Transfer UNREAL tokens from funder to custodial wallet and then to UnrealClient contract
  *
