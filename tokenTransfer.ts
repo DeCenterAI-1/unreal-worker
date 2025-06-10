@@ -10,40 +10,8 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { erc20Abi } from "./abis/erc20Abi";
 
-// Contract addresses
-const UNREAL_TOKEN_ADDRESS = "0xA409B5E5D34928a0F1165c7a73c8aC572D1aBCDB";
-const UNREAL_CLIENT_ADDRESS = "0x6dAC9A69C100983915cf97C078f930501ccEE278";
 
-const TORUS_RPC = process.env.RPC_URL || "https://rpc.toruschain.com/"
-
-const UNREAL_DRIP = parseEther(`${1.01}`)
-const ETH_DRIP = parseEther(`${.1}`)
-const UNREAL_COST = parseUnits("1", 18);
-
-
-
-export const torusMainnet = defineChain({
-  id: 8192,
-  name: "Torus Mainnet",
-  nativeCurrency: {
-    decimals: 18,
-    name: "Torus Ether",
-    symbol: "TQF",
-  },
-  rpcUrls: {
-    default: { http: [TORUS_RPC] },
-  },
-  blockExplorers: {
-    default: { name: "Torus Explorer", url: TORUS_RPC },
-  },
-  testnet: false,
-});
-
-const publicClient = createPublicClient({
-  chain: torusMainnet,
-  transport: http(TORUS_RPC),
-});
-
+import {torusMainnet, TORUS_RPC, UNREAL_COST, UNREAL_DRIP, , UNREAL_CLIENT_ADDRESS, UNREAL_TOKEN_ADDRESS, ETH_DRIP, publicClient} from "./config"
 /**
  * Transfer UNREAL tokens from funder to custodial wallet and then to UnrealClient contract
  *
