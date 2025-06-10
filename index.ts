@@ -3,15 +3,11 @@ import * as dotenv from "dotenv";
 import { transferUnrealTokens } from "./tokenTransfer";
 
 import {type QueueJob} from "./index.d"
+import { funderPrivateKey, queueName, supabase } from "./config";
 
 dotenv.config();
 
-const supabaseUrl = process.env.SUPABASE_URL as string;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
-const queueName = process.env.QUEUE_NAME as string;
-const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 
-const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 
 // Track jobs that have already had tokens transferred to prevent duplicate transfers
 const processedTokenTransfers = new Set<string>();
@@ -23,6 +19,7 @@ async function processQueue() {
 
     const { data, error } = await supabase.rpc("read_from_queue", {
       queue_name: queueName,
+      // sleep_seconds: 60, // Set to your max job duration
       vt: 30, // Visibility timeout (seconds)
       qty: 1, // Number of messages to fetch
     });
@@ -60,7 +57,7 @@ async function processQueue() {
           continue; // Skip processing if profile data is unavailable
         }
 
-        console.log("🔑 Wallet Private Key:", profileData.wallet?.privateKey);
+        console.log("🔑 Wallet Address:", profileData.wallet?.address);
 
         if (profileData.wallet?.privateKey) {
           // Check if we've already processed a token transfer for this job

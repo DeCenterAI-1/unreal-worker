@@ -1,3 +1,4 @@
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
   createPublicClient,
   createWalletClient,
@@ -43,3 +44,10 @@ export const publicClient = createPublicClient({
   transport: http(TORUS_RPC),
 });
 
+
+export const supabaseUrl = process.env.SUPABASE_URL as string;
+export const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+export const queueName = process.env.QUEUE_NAME as string;
+export const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
+
+export const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
