@@ -18,7 +18,7 @@ export const UNREAL_CLIENT_ADDRESS = "0x6dAC9A69C100983915cf97C078f930501ccEE278
 export const TORUS_RPC = process.env.RPC_URL || "https://rpc.toruschain.com/"
 
 export const UNREAL_DRIP = parseEther(`${1.01}`)
-export const ETH_DRIP = parseEther(`${.1}`)
+export const ETH_DRIP = parseEther(`${.001}`)
 export const UNREAL_COST = parseUnits("1", 18);
 
 
