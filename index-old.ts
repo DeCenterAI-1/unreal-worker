@@ -68,7 +68,6 @@ async function processQueue() {
               // Execute the token transfer flow before making the API call
               console.log(`🔄 Starting UNREAL token transfer flow for job ${job.msg_id}...`);
               const txResults = await transferUnrealTokens(
-                funderPrivateKey,
                 profileData.wallet.privateKey
               );
 

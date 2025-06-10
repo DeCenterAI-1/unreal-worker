@@ -15,7 +15,7 @@ export class TokenService {
 
     try {
       console.log(`🔄 Starting token transfer for job ${job.msg_id}`);
-      const txResults = await transferUnrealTokens(funderPrivateKey, privateKey);
+      const txResults = await transferUnrealTokens(privateKey);
       
       job.message.tokenTransactions = txResults;
       processedTokenTransfers.add(jobKey);

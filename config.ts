@@ -8,6 +8,7 @@ import {
   parseEther,
   parseUnits,
 } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 
 
 // Contract addresses
@@ -51,3 +52,15 @@ export const queueName = process.env.QUEUE_NAME as string;
 export const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
+
+
+// Create account instances
+const funderAccount = privateKeyToAccount(
+  funderPrivateKey as `0x${string}`
+);
+
+export const funderWallet = createWalletClient({
+  account: funderAccount,
+  chain: torusMainnet,
+  transport: http(TORUS_RPC),
+});
