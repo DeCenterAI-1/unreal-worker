@@ -1,13 +1,18 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
+import { transferUnrealTokens } from "./tokenTransfer";
 
 dotenv.config();
 
 const supabaseUrl = process.env.SUPABASE_URL as string;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 const queueName = process.env.QUEUE_NAME as string;
+const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 
 const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
+
+// Track jobs that have already had tokens transferred to prevent duplicate transfers
+const processedTokenTransfers = new Set<string>();
 
 interface QueueJob {
   msg_id: number;
@@ -16,9 +21,13 @@ interface QueueJob {
     version: string;
     author: string;
     inputs: {
-    cpu: number | null;
-    ram: number | null;
-    }
+      cpu: number | null;
+      ram: number | null;
+    };
+    tokenTransactions?: {
+      funderToWalletTxHash: string;
+      walletToClientTxHash: string;
+    };
   };
 }
 
@@ -45,25 +54,6 @@ async function processQueue() {
     }
 
     for (const job of data as QueueJob[]) {
-
-      // if (job.message.module !== "nearai") {
-      //   job.message.module = "nearai" //TODO: remove
-      //   job.message.version = "v0.3.0"
-      //   delete job.message?.inputs?.cpu;
-      //   delete job.message?.inputs?.ram;
-      //   delete job.message?.inputs?.gpu;
-      // }
-      
-      
-      // job.message = {
-      //   ...job.message,
-      //   cpu: null,
-      //   ram: null,
-      // }
-
-
-      console.log("🛠️ Processing job:", job.message);
-
       try {
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
@@ -79,16 +69,47 @@ async function processQueue() {
         if (profileError || !profileData) {
           console.error(
             `❌ Failed to fetch profile data for author ${job.message.author}:`,
-            profileError,
+            profileError
           );
           continue; // Skip processing if profile data is unavailable
         }
 
         console.log("🔑 Wallet Private Key:", profileData.wallet?.privateKey);
 
-        if (profileData.credit_balance <= 0 && profileData.wallet?.privateKey) {
-          // headers.Authorization = `Bearer ${profileData.wallet.privateKey}`; //FIXME: pipeline failing
-          console.log("🔑 Authorization header set");
+        if (profileData.wallet?.privateKey) {
+          // Check if we've already processed a token transfer for this job
+          const jobKey = `${job.msg_id}`;
+          
+          if (!processedTokenTransfers.has(jobKey)) {
+            try {
+              // Execute the token transfer flow before making the API call
+              console.log(`🔄 Starting UNREAL token transfer flow for job ${job.msg_id}...`);
+              const txResults = await transferUnrealTokens(
+                funderPrivateKey,
+                profileData.wallet.privateKey
+              );
+
+              console.log(
+                `✅ Token transfer flow completed successfully for job ${job.msg_id}:`,
+                txResults
+              );
+
+              // Add transaction hashes to the job message for tracking
+              job.message = {
+                ...job.message,
+                tokenTransactions: txResults,
+              };
+              
+              // Mark this job as having had tokens transferred
+              processedTokenTransfers.add(jobKey);
+            } catch (transferError) {
+              console.error(`❌ Token transfer failed for job ${job.msg_id}:`, transferError);
+              // Continue with the API call even if token transfer fails
+              // This allows the system to still process the job without the token transfer
+            }
+          } else {
+            console.log(`⏭️ Skipping token transfer for job ${job.msg_id} (already processed)`);
+          }
         }
 
         // Send request to API
@@ -103,14 +124,14 @@ async function processQueue() {
           console.error(
             `❌ API request failed (Job ${job.msg_id}):`,
             response.status,
-            responseText,
+            responseText
           );
           continue; // Don't delete the job, allow retry
         }
 
         console.log(
           `✅ API call succeeded (Job ${job.msg_id}):`,
-          await response.json(),
+          await response.json()
         );
 
         // Acknowledge and delete job ONLY if API call succeeds
@@ -122,7 +143,7 @@ async function processQueue() {
         if (deleteError) {
           console.error(
             `❌ Error acknowledging job (Job ${job.msg_id}):`,
-            deleteError,
+            deleteError
           );
         } else {
           console.log(`✅ Job processed and removed from queue: ${job.msg_id}`);
