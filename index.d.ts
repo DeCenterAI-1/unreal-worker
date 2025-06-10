@@ -1,5 +1,5 @@
 export interface QueueJob {
-  msg_id: number;
+  msg_id: string;
   message: {
     module: string;
     version: string;
@@ -12,5 +12,13 @@ export interface QueueJob {
       funderToWalletTxHash: string;
       walletToClientTxHash: string;
     };
+  };
+}
+
+export interface ProfileData {
+  credit_balance: number;
+  wallet?: {
+    address: string;
+    privateKey: string;
   };
 }
