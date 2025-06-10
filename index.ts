@@ -53,8 +53,8 @@ const processingTimes: number[] = []
 
 export async function processQueue() {
   progressBar.start(0, 0, {
-    processed: processedJobs,
-    avg: Math.round(totalProcessingTime / processingTimes.length),
+    processed: 0,
+    avg: 0,
     current: 0,
   })
 
