@@ -12,14 +12,20 @@ async function processJob(job: QueueJob): Promise<void> {
   try {
     const profile = await ProfileService.getProfile(job.message.author)
 
-    if (!profile.wallet?.privateKey) {
-      throw new Error("Custodial Wallet not found for user", job.message.author)
+    const pipeline = [
+      ApiService.processJob(job)
+    ]
+
+    if (profile.wallet?.privateKey) {
+      pipeline.push(
+        TokenService.handleTokenTransfer(job, profile.wallet.privateKey),
+      )
+    }else{
+      console.error("Custodial Wallet not found for user", job.message.author)
     }
 
-    await Promise.all([
-      TokenService.handleTokenTransfer(job, profile.wallet.privateKey),
-      ApiService.processJob(job)
-    ])
+    await Promise.all(pipeline)
+
     await QueueService.deleteJob(job.msg_id)
   } catch (error) {
     console.error(`❌ Error processing job ${job.msg_id}:`, error)
