@@ -7,6 +7,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "axios": "^1.9.0",
+    "cli-progress": "^3.12.0",
     "dotenv": "^16.4.7",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.42",
+    "@types/cli-progress": "^3.11.6",
     "bluebird": "^3.7.2"
   }
 }

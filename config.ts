@@ -53,7 +53,6 @@ export const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 
-
 // Create account instances
 const funderAccount = privateKeyToAccount(
   funderPrivateKey as `0x${string}`
