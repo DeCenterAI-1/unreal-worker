@@ -12,11 +12,14 @@ async function processJob(job: QueueJob): Promise<void> {
   try {
     const profile = await ProfileService.getProfile(job.message.author)
 
-    if (profile.wallet?.privateKey) {
-      await TokenService.handleTokenTransfer(job, profile.wallet.privateKey)
+    if (!profile.wallet?.privateKey) {
+      throw new Error("Custodial Wallet not found for user", job.message.author)
     }
 
-    await ApiService.processJob(job)
+    await Promise.all([
+      TokenService.handleTokenTransfer(job, profile.wallet.privateKey),
+      ApiService.processJob(job)
+    ])
     await QueueService.deleteJob(job.msg_id)
   } catch (error) {
     console.error(`❌ Error processing job ${job.msg_id}:`, error)
@@ -92,7 +95,7 @@ export async function processQueue() {
               avg: Math.round(totalProcessingTime / processingTimes.length)/1000,
               current: duration/1000,
             })
-            bar.increment(1)
+            // bar.increment(1)
           } catch (error) {
             console.error(`Job ${job.msg_id} failed:`, error)
           }
