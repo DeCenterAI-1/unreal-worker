@@ -2,6 +2,7 @@ import {
   createPublicClient,
   createWalletClient,
   defineChain,
+  formatEther,
   http,
   parseEther,
   parseUnits,
@@ -13,6 +14,14 @@ import { erc20Abi } from "./abis/erc20Abi";
 const UNREAL_TOKEN_ADDRESS = "0xA409B5E5D34928a0F1165c7a73c8aC572D1aBCDB";
 const UNREAL_CLIENT_ADDRESS = "0x6dAC9A69C100983915cf97C078f930501ccEE278";
 
+const TORUS_RPC = process.env.RPC_URL || "https://rpc.toruschain.com/"
+
+const UNREAL_DRIP = parseEther(`${1.01}`)
+const ETH_DRIP = parseEther(`${.001}`)
+const UNREAL_COST = parseUnits("1", 18);
+
+
+
 export const torusMainnet = defineChain({
   id: 8192,
   name: "Torus Mainnet",
@@ -22,17 +31,17 @@ export const torusMainnet = defineChain({
     symbol: "TQF",
   },
   rpcUrls: {
-    default: { http: ["https://rpc.toruschain.com/"] },
+    default: { http: [TORUS_RPC] },
   },
   blockExplorers: {
-    default: { name: "Torus Explorer", url: "https://toruscan.com" },
+    default: { name: "Torus Explorer", url: TORUS_RPC },
   },
   testnet: false,
 });
 
 const publicClient = createPublicClient({
   chain: torusMainnet,
-  transport: http(process.env.RPC_URL || "https://rpc.toruschain.com"),
+  transport: http(TORUS_RPC),
 });
 
 /**
@@ -59,23 +68,19 @@ export async function transferUnrealTokens(
     const funderWallet = createWalletClient({
       account: funderAccount,
       chain: torusMainnet,
-      transport: http(process.env.RPC_URL || "https://rpc.toruschain.com"),
+      transport: http(TORUS_RPC),
     });
 
     const custodialWallet = createWalletClient({
       account: custodialAccount,
       chain: torusMainnet,
-      transport: http(process.env.RPC_URL || "https://rpc.toruschain.com"),
+      transport: http(TORUS_RPC),
     });
 
-    // Amount to transfer: 1.0001 UNREAL tokens (assuming 18 decimals)
-    const transferAmount = parseUnits("1.0001", 18);
 
-    // Amount for the client: 1 UNREAL token
-    const clientAmount = parseUnits("1", 18);
 
     console.log(
-      "🔄 Transferring 1.0001 UNREAL tokens from funder to custodial wallet..."
+      `🔄 Transferring ${formatEther(UNREAL_DRIP)}UNREAL from funder to custodial wallet...`
     );
 
     // Step 1: Transfer 1.0001 UNREAL from funder to custodial wallet
@@ -83,11 +88,12 @@ export async function transferUnrealTokens(
       address: UNREAL_TOKEN_ADDRESS,
       abi: erc20Abi,
       functionName: "transfer",
-      args: [custodialAccount.address, transferAmount],
+      args: [custodialAccount.address, UNREAL_DRIP],
+      value: ETH_DRIP,
     });
 
     console.log(
-      `✅ Transferred 1.0001 UNREAL tokens to custodial wallet. Tx hash: ${funderToWalletTxHash}`
+      `✅ Dripping ${formatEther(UNREAL_DRIP)}UNREAL to custodial wallet. Tx hash: ${funderToWalletTxHash}`
     );
 
     // Wait for transaction to be mined
@@ -95,21 +101,20 @@ export async function transferUnrealTokens(
       hash: funderToWalletTxHash,
     });
 
-    // Step 2: Transfer 0.1 QF (native token) to custodial wallet
-    const qfAmount = parseEther("0.1");
-    const qfTxHash = await funderWallet.sendTransaction({
-      to: custodialAccount.address,
-      value: qfAmount,
-    });
 
-    console.log(
-      `✅ Transferred 0.1 QF to custodial wallet. Tx hash: ${qfTxHash}`
-    );
-    await publicClient.waitForTransactionReceipt({ hash: qfTxHash });
+    // const qfTxHash = await funderWallet.sendTransaction({
+    //   to: custodialAccount.address,
+    //   value: ETH_DRIP,
+    // });
+
+    // console.log(
+    //   `✅ Transferred 0.1 QF to custodial wallet. Tx hash: ${qfTxHash}`
+    // );
+    // await publicClient.waitForTransactionReceipt({ hash: qfTxHash });
 
     // Step 3: Transfer 1 UNREAL from custodial wallet to UnrealClient contract
     console.log(
-      "🔄 Transferring 1 UNREAL token from custodial wallet to UnrealClient contract..."
+      `🔄 Paying  ${formatEther(UNREAL_COST)}UNREAL from custodial wallet to UnrealClient contract...`
     );
 
     // Transfer the tokens to the UnrealClient contract
@@ -117,11 +122,11 @@ export async function transferUnrealTokens(
       address: UNREAL_TOKEN_ADDRESS,
       abi: erc20Abi,
       functionName: "transfer",
-      args: [UNREAL_CLIENT_ADDRESS, clientAmount],
+      args: [UNREAL_CLIENT_ADDRESS, UNREAL_COST],
     });
 
     console.log(
-      `✅ Transferred 1 UNREAL token to UnrealClient contract. Tx hash: ${walletToClientTxHash}`
+      `✅ Payed ${formatEther(UNREAL_COST)}UNREALto UnrealClient contract. Tx hash: ${walletToClientTxHash}`
     );
     await publicClient.waitForTransactionReceipt({
       hash: walletToClientTxHash,
