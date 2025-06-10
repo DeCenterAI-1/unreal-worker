@@ -17,7 +17,7 @@ const UNREAL_CLIENT_ADDRESS = "0x6dAC9A69C100983915cf97C078f930501ccEE278";
 const TORUS_RPC = process.env.RPC_URL || "https://rpc.toruschain.com/"
 
 const UNREAL_DRIP = parseEther(`${1.01}`)
-const ETH_DRIP = parseEther(`${.001}`)
+const ETH_DRIP = parseEther(`${.1}`)
 const UNREAL_COST = parseUnits("1", 18);
 
 
@@ -89,7 +89,6 @@ export async function transferUnrealTokens(
       abi: erc20Abi,
       functionName: "transfer",
       args: [custodialAccount.address, UNREAL_DRIP],
-      value: ETH_DRIP,
     });
 
     console.log(
@@ -102,15 +101,15 @@ export async function transferUnrealTokens(
     });
 
 
-    // const qfTxHash = await funderWallet.sendTransaction({
-    //   to: custodialAccount.address,
-    //   value: ETH_DRIP,
-    // });
+    const qfTxHash = await funderWallet.sendTransaction({
+      to: custodialAccount.address,
+      value: ETH_DRIP,
+    });
 
-    // console.log(
-    //   `✅ Transferred 0.1 QF to custodial wallet. Tx hash: ${qfTxHash}`
-    // );
-    // await publicClient.waitForTransactionReceipt({ hash: qfTxHash });
+    console.log(
+      `✅ Transferred ${formatEther(ETH_DRIP)} QF to custodial wallet. Tx hash: ${qfTxHash}`
+    );
+    await publicClient.waitForTransactionReceipt({ hash: qfTxHash });
 
     // Step 3: Transfer 1 UNREAL from custodial wallet to UnrealClient contract
     console.log(
