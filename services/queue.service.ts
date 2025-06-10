@@ -2,12 +2,12 @@ import { supabase, queueName } from "../config";
 import { QueueJob } from "../index.d";
 
 export class QueueService {
-  static async fetchJobs(): Promise<QueueJob[]> {
+  static async fetchJobs(n=1): Promise<QueueJob[]> {
     console.log("🔄 Checking queue...");
     const { data, error } = await supabase.rpc("read_from_queue", {
       queue_name: queueName,
       vt: 30,
-      qty: 1,
+      qty: n,
     });
 
     if (error) throw error;

@@ -26,7 +26,7 @@ async function processJob(job: QueueJob): Promise<void> {
 export async function processQueue() {
   while (true) {
     try {
-      const jobs = await QueueService.fetchJobs();
+      const jobs = await QueueService.fetchJobs(4); //Solve up to 4 jobs concurrently
       
       if (jobs.length === 0) {
         await Bluebird.delay(5000);
