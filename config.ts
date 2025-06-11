@@ -11,6 +11,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { jsonRpc } from "viem/nonce";
+import { getCachedWallet } from "./cache/wallet";
 
 
 // Contract addresses
@@ -56,19 +57,12 @@ export const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 export const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 
 
-const nonceManager = createNonceManager({
-  source: jsonRpc(),
-});
-
 // Create account instances
-const funderAccount = privateKeyToAccount(
-  funderPrivateKey as `0x${string}`, {nonceManager}
-);
-
+const funderAccount = getCachedWallet(funderPrivateKey)
 
 
 export const funderWallet = createWalletClient({
-  account: funderAccount,
+  account: funderAccount.account,
   chain: torusMainnet,
   transport: http(TORUS_RPC),
 });
