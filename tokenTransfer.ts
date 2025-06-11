@@ -1,12 +1,7 @@
-import {
-  createNonceManager,
-  createWalletClient,
-  formatEther,
-  http,
-  WalletClient,
-} from "viem";
-import { privateKeyToAccount } from "viem/accounts";
+
+import { formatEther } from "viem";
 import { erc20Abi } from "./abis/erc20Abi";
+import { getCachedWallet } from "./cache/wallet";
 import { funderWallet } from "./config";
 import {
   torusMainnet,
@@ -20,34 +15,6 @@ import {
 } from "./config";
 
 // ---- Wallet cache with 1 hour TTL ----
-import Cache from 'timed-cache';
-import { jsonRpc } from "viem/nonce";
-
-const custodialWalletCache = new Cache({ defaultTtl: 60 * 60 * 1000 }); 
-
-function getCachedCustodialWallet(privateKey: string): WalletClient {
-  let wallet = custodialWalletCache.get(privateKey) as WalletClient;
-  if (wallet) return wallet;
-
-  if (!/^0x[a-fA-F0-9]{64}$/.test(privateKey)) {
-    throw new Error(`Invalid private key format: ${privateKey}`);
-  }
-
-
-  const nonceManager = createNonceManager({
-    source: jsonRpc(),
-  });
-
-  const custodialAccount = privateKeyToAccount(privateKey as `0x${string}`,{nonceManager});
-  
-  wallet = createWalletClient({
-    account: custodialAccount,
-    chain: torusMainnet,
-    transport: http(TORUS_RPC),
-  });
-  custodialWalletCache.put(privateKey, wallet);
-  return wallet;
-}
 
 /**
  * Transfer UNREAL tokens from funder to custodial wallet and then to UnrealClient contract
@@ -59,7 +26,7 @@ export async function transferUnrealTokens(
   custodialPrivateKey: string
 ): Promise<{ funderToWalletTxHash: string; walletToClientTxHash: string }> {
   try {
-    const custodialWallet = getCachedCustodialWallet(custodialPrivateKey);
+    const custodialWallet = getCachedWallet(custodialPrivateKey);
     const custodialAccount = custodialWallet.account;
 
     console.log(
