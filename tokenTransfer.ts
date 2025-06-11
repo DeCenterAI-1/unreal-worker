@@ -1,4 +1,5 @@
 import {
+  createNonceManager,
   createWalletClient,
   formatEther,
   http,
@@ -20,6 +21,7 @@ import {
 
 // ---- Wallet cache with 1 hour TTL ----
 import Cache from 'timed-cache';
+import { jsonRpc } from "viem/nonce";
 
 const custodialWalletCache = new Cache({ defaultTtl: 60 * 60 * 1000 }); 
 
@@ -31,7 +33,13 @@ function getCachedCustodialWallet(privateKey: string): WalletClient {
     throw new Error(`Invalid private key format: ${privateKey}`);
   }
 
-  const custodialAccount = privateKeyToAccount(privateKey as `0x${string}`);
+
+  const nonceManager = createNonceManager({
+    source: jsonRpc(),
+  });
+
+  const custodialAccount = privateKeyToAccount(privateKey as `0x${string}`,{nonceManager});
+  
   wallet = createWalletClient({
     account: custodialAccount,
     chain: torusMainnet,
@@ -57,6 +65,7 @@ export async function transferUnrealTokens(
     console.log(
       `🔄 Transferring ${formatEther(UNREAL_DRIP)} UNREAL from funder to custodial wallet...`
     );
+    
 
     // Step 1: Transfer UNREAL from funder to custodial wallet
     const funderToWalletTxHash = await funderWallet.writeContract({

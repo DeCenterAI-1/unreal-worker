@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import {
+  createNonceManager,
   createPublicClient,
   createWalletClient,
   defineChain,
@@ -9,6 +10,7 @@ import {
   parseUnits,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import { jsonRpc } from "viem/nonce";
 
 
 // Contract addresses
@@ -53,10 +55,17 @@ export const funderPrivateKey = process.env.FUNDER_PRIVATE_KEY as string;
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, serviceRoleKey);
 
+
+const nonceManager = createNonceManager({
+  source: jsonRpc(),
+});
+
 // Create account instances
 const funderAccount = privateKeyToAccount(
-  funderPrivateKey as `0x${string}`
+  funderPrivateKey as `0x${string}`, {nonceManager}
 );
+
+
 
 export const funderWallet = createWalletClient({
   account: funderAccount,
